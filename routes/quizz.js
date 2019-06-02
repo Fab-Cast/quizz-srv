@@ -1,19 +1,17 @@
-var mongoose = require('mongoose');
 var passport = require('passport');
-var config = require('../config/database');
 require('../config/passport')(passport);
 var express = require('express');
-var jwt = require('jsonwebtoken');
 var router = express.Router();
 var User = require("../models/user");
+var Quizz = require("../models/quizz");
 var toolBox = require("../toolBox")
 
 router.get('/', toolBox.needsGroup('admin'), function(req, res) {
   var token = toolBox.getToken(req.headers);
   if (token) {
-    User.find(function (err, users) {
+    Quizz.find(function (err, quizz) {
       if (err) return next(err);
-      res.json(users);
+      res.json(quizz);
     });
   } else {
     return res.status(403).send({
@@ -22,15 +20,30 @@ router.get('/', toolBox.needsGroup('admin'), function(req, res) {
     });
   }
 });
+  
+router.post('/', function (req, res) {
+    var newQuizz = new Quizz({
+        title: req.body.title,
+        note: req.body.note,
+        author: req.body.author,
+        questions: req.body.questions,
+    });
+    newQuizz.save(function(err) {
+        if (err) {
+          return res.json({success: false, msg: 'Save quizz failed.'});
+        }
+        res.json({success: true, msg: 'Successful created new quizz.'});
+    });
+});
 
 router.delete('/:id', toolBox.needsGroup('admin'), function(req, res) {
   var token = toolBox.getToken(req.headers);
   if (token) {
-    User.findOneAndRemove({
+    Quizz.findOneAndRemove({
       _id: req.params.id
-    }, function (err, user) {
+    }, function (err, quizz) {
       if (err) return next(err);
-      res.json(user);
+      res.json(quizz);
     });
   } else {
     return res.status(403).send({
