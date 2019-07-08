@@ -38,9 +38,22 @@ router.post('/signup', function (req, res) {
 });
 
 router.post('/signin', function (req, res) {
+
+    console.log('---------------------------req.body.email')
+    console.log(req.body.email)
+
+
     User.findOne({
         email: req.body.email
     }, function (err, user) {
+
+        console.log('---------------------------user')
+        console.log(user)
+
+        passport.authenticate('jwt', {
+            session: false
+        }, user)
+
         if (err) throw err;
 
         if (!user) {

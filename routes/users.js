@@ -8,9 +8,14 @@ var router = express.Router();
 var User = require("../models/user");
 var toolBox = require("../toolBox")
 
-router.get('/', toolBox.needsGroup('admin'), function(req, res) {
-  var token = toolBox.getToken(req.headers);
-  if (token) {
+router.get('/', function(req, res) {
+
+  
+  let token = toolBox.getToken(req.headers);
+  let userGroup = jwt.decode(token, {complete: true}).payload.group
+  let groupsAllowed = ['admin', 'developper']
+
+  if (toolBox.needsGroup(userGroup, groupsAllowed)) {
     User.find(function (err, users) {
       if (err) return next(err);
       res.json(users);
@@ -23,9 +28,13 @@ router.get('/', toolBox.needsGroup('admin'), function(req, res) {
   }
 });
 
-router.delete('/:id', toolBox.needsGroup('admin'), function(req, res) {
-  var token = toolBox.getToken(req.headers);
-  if (token) {
+router.delete('/:id', function(req, res) {
+
+  let token = toolBox.getToken(req.headers);
+  let userGroup = jwt.decode(token, {complete: true}).payload.group
+  let groupsAllowed = ['admin']
+
+  if (toolBox.needsGroup(userGroup, groupsAllowed)) {
     User.findOneAndRemove({
       _id: req.params.id
     }, function (err, user) {

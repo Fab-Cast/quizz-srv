@@ -6,7 +6,7 @@ var User = require("../models/user");
 var Quizz = require("../models/quizz");
 var toolBox = require("../toolBox")
 
-router.get('/', toolBox.needsGroup('admin'), function(req, res) {
+router.get('/', function(req, res) {
   var token = toolBox.getToken(req.headers);
   if (token) {
     Quizz.find(function (err, quizz) {
@@ -36,9 +36,16 @@ router.post('/', function (req, res) {
     });
 });
 
-router.delete('/:id', toolBox.needsGroup('admin'), function(req, res) {
-  var token = toolBox.getToken(req.headers);
-  if (token) {
+
+router.delete('/:id', function(req, res) {
+
+  ///////////////////////// Pourquoi ça marche avec Users et pas avec Quizz ?????????????
+
+  let token = toolBox.getToken(req.headers);
+  let userGroup = jwt.decode(token, {complete: true}).payload.group
+  let groupsAllowed = ['admin']
+
+  if (toolBox.needsGroup(userGroup, groupsAllowed)) {
     Quizz.findOneAndRemove({
       _id: req.params.id
     }, function (err, quizz) {
@@ -52,5 +59,7 @@ router.delete('/:id', toolBox.needsGroup('admin'), function(req, res) {
     });
   }
 });
+
+
 
 module.exports = router;
